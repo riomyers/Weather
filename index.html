@@ -95,6 +95,24 @@ var root = document.documentElement,
 	img = new Image(),
 	$location = $('#js-geolocation');
 
+	/* Does the browser support geolocation? */
+	if (navigator.geolocation) {
+		loading.innerHTML = "Loading your location's weather data...";
+		$location.one('touchstart', function(e) {
+			/* Where in the world are you? */
+			navigator.geolocation.getCurrentPosition(function(position) {
+		    loadWeather(position.coords.latitude+','+position.coords.longitude); //load weather using your lat/lng coordinates
+			currentweather.innerHTML = "Checking weather...";
+			loading.innerHTML = "Loading background image...";
+			e.stopPropagation();
+			e.preventDefault();
+			return false;
+		  });
+		});
+	} else {
+		currentweather.innerHTML = "Sorry, your browser doesn't support geolocation."
+	};
+
 	if (navigator.geolocation) {
 	    navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
 	}
@@ -121,24 +139,6 @@ var root = document.documentElement,
 	/* If geolocation was already allowed */
 		currentweather.innerHTML = "Checking weather..."
 	}
-
-	/* Does your browser support geolocation? */
-	if (navigator.geolocation) {
-		loading.innerHTML = "Loading your location's weather data...";
-		$location.one('touchstart', function(e) {
-			/* Where in the world are you? */
-			navigator.geolocation.getCurrentPosition(function(position) {
-		    loadWeather(position.coords.latitude+','+position.coords.longitude); //load weather using your lat/lng coordinates
-			currentweather.innerHTML = "Checking weather...";
-			loading.innerHTML = "Loading background image...";
-			e.stopPropagation();
-			e.preventDefault();
-			return false;
-		  });
-		});
-	} else {
-		currentweather.innerHTML = "Sorry, your browser doesn't support geolocation."
-	};
 
 	/* Emulate click so the script asks for location access when the page loads without user interaction */
 	$location.trigger('touchstart'); //use touchstart so it works on older IOS safari
