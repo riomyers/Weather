@@ -150,6 +150,7 @@ var root = document.documentElement,
 		//setInterval(loadWeather, 60000); //Update the weather every minute
 	});*/
 
+	/* load weather from simpleWeather & Yahoo API (API calls are handled in the background by simpleWeather */
 	function loadWeather(location, woeid) {
 
 	  $.simpleWeather({
@@ -164,15 +165,16 @@ var root = document.documentElement,
 
 	    $("#weather").html(html);
 
+		/* set shortcut variable to detect weather codes - weather code reference : https://developer.yahoo.com/weather/documentation.html?guccounter=1#codes */
 		var w = weather.code;
 		
-		/* Log weather code */
-		// console.log(w);
+		/* Log weather code - delete the // from the line below to show weather code logs in the console */
+		//console.log(w);
 
 		/* Shortcut function to load images from Unsplash API */
 		function setBG(s) {body.style.backgroundImage = "url(" + "https://source.unsplash.com/random?" + s + ")";};
 
-		/* Set weather code responses */ 
+		/* Set weather code response backgrounds */ 
 		if (w == '0' || w == '1' || w == '2') {
 		  /* If it's a crazy storm, use storm backgrounds and show a warning */
 		  setBG("storm");
@@ -290,7 +292,7 @@ var root = document.documentElement,
 		    window.location.reload(true); }, timeout);
 		};
 
-		/* Refresh times - 5 minutes intervals. Yes.. I know. */
+		/* Refresh times in UTC - 5 minutes intervals. Yes.. I know. */
 		refreshAt(0,0,0);
 		refreshAt(0,5,0);
 		refreshAt(0,10,0);
