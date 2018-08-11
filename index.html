@@ -19,591 +19,592 @@
 	<meta property="og:image" content="https://riomyers.com/weather/weather.jpg" />
 	<link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
 	<style>
-	body, html{background: no-repeat center center fixed;background-size: cover;text-align: center;font-family: 'Poppins', sans-serif;height: 100vh;min-height: 100%;-ms-touch-action: manipulation;touch-action: manipulation;}
-	body{position: fixed;background-color: #000;}
-	.black{background: #000000;}
-	.night-cursor{cursor: url(night-cursor.png), auto;}
-	.sunset-cursor{cursor: url(sunset-cursor.png), auto;}
-	.day-cursor{cursor: url(day-cursor.png), auto;}
-	h1,h4,h6 {margin:0;}
-	h1 {margin-bottom: 10px;}
-	a{color: black;text-decoration: none;}
-	a:hover{color: white;}
-	div#intro {
-      position: fixed;
-      top: 25%;
-   	  left: 50%;
-  	  transform: translate(-50%, -50%);
-	  width: 45%;
-	  padding: 10px 25px;
-	  margin: 50px auto;
-	  background: rgba(255, 255, 255, 0.4);
-	  color: #1F1F1F;
-	}
-	h1{font-size: 3em;}
-	#loading{
-		position: fixed;
-		bottom: 0;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		color: #ffffff;
-	}
-	#copyright{margin-top: 10px;}
-	#weather ul {
-	  margin: 0;
-	  padding: 0;
-	}
-	#weather li {
-	  padding: 20px;
-	  display: inline-block;
-	}
-	#js-geolocation {
-	  position: fixed;
-	  top: 90%;
-	  left: 50%;
-  	  transform: translate(-50%, -50%);
-	  visibility: hidden;
-	  width: 140px;
-	  padding: 5px;
-	  background: transparent;
-	  color: #000000;
-	  border: 0;
-	  cursor: pointer;
-	  background: rgba(255, 255, 255, 0.4);
-	}
-	.small{font-size: .73em;}
-	.smaller{font-size: .5em;}
+		body, html{background: no-repeat center center fixed;background-size: cover;text-align: center;font-family: 'Poppins', sans-serif;height: 100vh;min-height: 100%;-ms-touch-action: manipulation;touch-action: manipulation;}
+		body{position: fixed;background-color: #000;}
+		.black{background: #000000;}
+		.night-cursor{cursor: url(night-cursor.png), auto;}
+		.sunset-cursor{cursor: url(sunset-cursor.png), auto;}
+		.day-cursor{cursor: url(day-cursor.png), auto;}
+		h1,h4,h6 {margin:0;}
+		h1 {margin-bottom: 10px;}
+		a{color: black;text-decoration: none;}
+		a:hover{color: white;}
+		div#intro {
+	      position: fixed;
+	      top: 25%;
+	   	  left: 50%;
+	  	  transform: translate(-50%, -50%);
+		  width: 45%;
+		  padding: 10px 25px;
+		  margin: 50px auto;
+		  background: rgba(255, 255, 255, 0.4);
+		  color: #1F1F1F;
+		}
+		h1{font-size: 3em;}
+		#loading{
+		  position: fixed;
+		  bottom: 0;
+		  left: 50%;
+	      transform: translate(-50%, -50%);
+		  color: #ffffff;
+		}
+		#copyright{margin-top: 10px;}
+		#weather ul {
+		  margin: 0;
+		  padding: 0;
+		}
+		#weather li {
+		  padding: 20px;
+		  display: inline-block;
+		}
+		#js-geolocation {
+		  position: fixed;
+		  top: 90%;
+		  left: 50%;
+	  	  transform: translate(-50%, -50%);
+		  visibility: hidden;
+		  width: 140px;
+		  padding: 5px;
+		  background: transparent;
+		  color: #000000;
+		  border: 0;
+		  cursor: pointer;
+		  background: rgba(255, 255, 255, 0.4);
+		}
+		.small{font-size: .73em;}
+		.smaller{font-size: .5em;}
 	</style>
 </head>
+
 <body>
-  <div id="intro">
-    <h4 id="currentweather">Please allow location access to load the weather in your area...</h4>
-    <div id="weather"></div>
-    <h6 id="copyright">Created by <a href="https://riomyers.com" target="_blank">Rio Myers</a></h6>
-  </div>
-  	<button id="js-geolocation">Use Your Location</button>
-  	<h6 id="loading"></h6>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-<script src="simpleWeather.min.js"></script>
-<script>
-var root = document.documentElement,
-	body = document.getElementsByTagName("body")[0],
-	currentweather = document.getElementById("currentweather"),
-	loading = document.getElementById("loading"),
-	bg = "",
-	img = new Image(),
-	$location = $('#js-geolocation');
-
-	/* Does the browser support geolocation? */
-	if (navigator.geolocation) {
-		loading.innerHTML = "Loading your location's weather data...";
-		$location.one('touchstart', function(e) {
-			/* Where in the world are you? */
-			navigator.geolocation.getCurrentPosition(function(position) {
-		    loadWeather(position.coords.latitude+','+position.coords.longitude); //load weather using your lat/lng coordinates
-			currentweather.innerHTML = "Checking weather...";
-			loading.innerHTML = "Loading background image...";
-			e.stopPropagation();
-			e.preventDefault();
-			return false;
-		  });
-		});
-	} else {
-		currentweather.innerHTML = "Sorry, your browser doesn't support geolocation."
-	};
-
-	if (navigator.geolocation) {
-	    navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
-	}
-	//Check if latitude and longitude has already been authorized
-	function successFunction(position) {
-	    var lat = position.coords.latitude;
-	    var long = position.coords.longitude;
-
-	    localStorage['authorizedGeoLocation'] = 1;
-	}
-
-	function errorFunction(){
-	    localStorage['authorizedGeoLocation'] = 0;
-	}
-
-	function checkauthorizedGeoLocation(){ // check if geolocation was previously allowed
-	    if(typeof localStorage['authorizedGeoLocation'] == "undefined" || localStorage['authorizedGeoLocation'] == "0" )
-	        return false;
-	    else
-	        return true;
-	}
-
-	if (checkauthorizedGeoLocation("true")) {
-	/* If geolocation was already allowed */
-		currentweather.innerHTML = "Checking weather..."
-	}
-
-	/* Emulate click so the script asks for location access when the page loads without user interaction */
-	$location.trigger('touchstart'); //use touchstart so it works on older IOS safari
-
-	/* Load the weather
-	$(function () {
-		//@params location, woeid
-		//loadWeather('Austin','');
-		//setInterval(loadWeather, 60000); //Update the weather every minute
-	});*/
-
-	/* load weather from simpleWeather & Yahoo API (API calls are handled in the background by simpleWeather */
-	function loadWeather(location, woeid) {
-
-	  $.simpleWeather({
-	    location: location,
-	    woeid: woeid,
-	    unit: 'f',
-	    success: function(weather) {
-	      html = '<h1>'+weather.temp+'<span class="smaller">&deg;'+weather.units.temp+'</span></h1>';
-	      html += '<ul><li>'+weather.currently+'</li>';
-	      html += '<li>'+weather.city+', '+weather.region+'</li>';
-	      html += '<li>'+weather.alt.temp+'<span class="small">&deg;C</span></li></ul>';
-
-	    $("#weather").html(html);
-
-		/* set shortcut variable to detect weather codes - weather code reference : https://developer.yahoo.com/weather/documentation.html?guccounter=1#codes */
-		var w = weather.code;
+	<div id="intro">
+		<h4 id="currentweather">Please allow location access to load the weather in your area...</h4>
+		<div id="weather"></div>
+		<h6 id="copyright">Created by <a href="https://riomyers.com" target="_blank">Rio Myers</a></h6>
+	</div>
+	<button id="js-geolocation">Use Your Location</button>
+	<h6 id="loading"></h6>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	<script src="simpleWeather.min.js"></script>
+	<script>
+		var root = document.documentElement,
+			body = document.getElementsByTagName("body")[0],
+			currentweather = document.getElementById("currentweather"),
+			loading = document.getElementById("loading"),
+			bg = "",
+			img = new Image(),
+			$location = $('#js-geolocation');
 		
-		/* Log weather code - delete the // from the line below to show weather code logs in the console */
-		//console.log(w);
-
-		/* Shortcut function to load images from Unsplash API */
-		function setBG(s) {body.style.backgroundImage = "url(" + "https://source.unsplash.com/random?" + s + ")";};
-
-		/* Set weather code response backgrounds */ 
-		if (w == '0' || w == '1' || w == '2') {
-		  /* If it's a crazy storm, use storm backgrounds and show a warning */
-		  setBG("storm");
-		  currentweather.innerHTML = "There's a crazy storm nearby, why are you on the internet? Go hide in the bathtub!";
-		  //currentweather.style.display = "none";
-		  root.className += " night-cursor";
-		} else if (w == '3' || w == '4' || w == '45' || w == '37' || w == '38' || w == '39' || w == '40' || w == '47') {
-		  /* If there's a storm, use storm backgrounds */
-		  setBG("storm");
-		  currentweather.style.display = "none";
-		  root.className += " sunset-cursor";
-		} else if (w == '5' || w == '6' || w == '8' || w == '9' || w == '10' || w == '11' || w == '12') {
-		  /* If it's raining, use rain backgrounds */
-		  setBG("rain");
-		  currentweather.style.display = "none";
-		  root.className += " sunset-cursor";
-		} else if (w == '7' || w == '13' || w == '14' || w == '15' || w == '16' || w == '41' || w == '42' || w == '43' || w == '46') {
-		  /* If it's snowing, use snow backgrounds */
-		  setBG("snow");
-		  currentweather.style.display = "none";
-		  root.className += " night-cursor";
-		} else if (w == '26' || w == '27' || w == '28' || w == '29' || w == '30' || w == '44') {
-		  /* If it's cloudy, use cloudy backgrounds */
-		  setBG("cloudy");
-		  currentweather.style.display = "none";
-		  root.className += " sunset-cursor";
-		} else if (w == '17' || w == '18' || w == '25' || w =='35') {
-		  /* If there's hail or sleet or cold, use ice backgrounds */
-		  setBG("ice");
-		  currentweather.style.display = "none";
-		  root.className += " night-cursor";
-		} else if (w == '19') {
-		  /* If it's dusty, use dust backgrounds */
-		  setBG("dust");
-		  currentweather.style.display = "none";
-		  root.className += " day-cursor";
-		} else if (w == '36') {
-		  /* If it's hot, use desert backgrounds */
-		  setBG("desert");
-		  currentweather.style.display = "none";
-		  root.className += " day-cursor";
-		} else if (w == '20' || w == '21') {
-		  /* If it's foggy/hazy, use fog backgrounds */
-		  setBG("fog");
-		  currentweather.style.display = "none";
-		  root.className += " night-cursor";
-		} else if (w == '22') {
-		  /* If it's smoky, use smoke backgrounds */
-		  setBG("smoke");
-		  currentweather.style.display = "none";
-		  root.className += " night-cursor";
-		} else if (w == '23' || w == '24') {
-		  /* If it's blustery/windy, use wind backgrounds */
-		  setBG("wind");
-		  currentweather.style.display = "none";
-		  root.className += " night-cursor";
-		} else if (w == '31' || w == '32' || w == '33' || w == '34') {
-		  /* If it's clear/sunny, use sunny backgrounds */
-		  setBG("sunny");
-		  currentweather.style.display = "none";
-		  root.className += " day-cursor";
-		} else {
-		  /* If it's none of those, the weather service is down, so use random weather backgrounds */
-		  setBG("weather");
-		  currentweather.innerHTML = "The weather service is not currently available.. but here's a beautiful background image anyways!";
-		  root.className += " day-cursor";
-		}
-
-		/* Get elements background URL */
-		function getBgUrl(el) {
-		    if (el.currentStyle) { /* IE */
-		        bg = el.currentStyle.backgroundImage;
-		    } else if (document.defaultView && document.defaultView.getComputedStyle) { /* Firefox */
-		        bg = document.defaultView.getComputedStyle(el, "").backgroundImage;
-		    } else { /* try and get inline style */
-		        bg = el.style.backgroundImage;
-		    }
-		    return bg.replace(/url\(['"]?(.*?)['"]?\)/i, "$1");
+			/* Does the browser support geolocation? */
+			if (navigator.geolocation) {
+				loading.innerHTML = "Loading your location's weather data...";
+				$location.one('touchstart', function(e) {
+					/* Where in the world are you? */
+					navigator.geolocation.getCurrentPosition(function(position) {
+				    loadWeather(position.coords.latitude+','+position.coords.longitude); //load weather using your lat/lng coordinates
+					currentweather.innerHTML = "Checking weather...";
+					loading.innerHTML = "Loading background image...";
+					e.stopPropagation();
+					e.preventDefault();
+					return false;
+				  });
+				});
+			} else {
+				currentweather.innerHTML = "Sorry, your browser doesn't support geolocation."
 			};
-
-			/* Set image src to background URL from body */
-			img.src = getBgUrl(body);
-
-			/* Error/Success handler */
-			img.onerror = function() {
-				loading.innerHTML = "Uh oh... the image database is down. Please try again later."
-			};
-			img.onload = function() {
-				loading.style.display = "none";
-				root.classList.remove("black");
-			};
-	    },
-	    error: function(error) {
-	      $("#weather").html('<p>'+error+'</p>');
-	    }
-	  });
-	}
-
-	/* Refresh at a specific time */
-	function refreshAt(hours, minutes, seconds) {
-	    var now = new Date();
-	    var then = new Date();
-
-	    if(now.getHours() > hours ||
-	       (now.getHours() == hours && now.getMinutes() > minutes) ||
-	        now.getHours() == hours && now.getMinutes() == minutes && now.getSeconds() >= seconds) {
-	        then.setDate(now.getDate() + 1);
-	    }
-	    then.setHours(hours);
-	    then.setMinutes(minutes);
-	    then.setSeconds(seconds);
-
-	    var timeout = (then.getTime() - now.getTime());
-	    setTimeout(function() {
-		    window.location.reload(true); }, timeout);
-		};
-
-		/* Refresh times in UTC - 5 minutes intervals. Yes.. I know. */
-		refreshAt(0,0,0);
-		refreshAt(0,5,0);
-		refreshAt(0,10,0);
-		refreshAt(0,15,0);
-		refreshAt(0,20,0);
-		refreshAt(0,25,0);
-		refreshAt(0,30,0);
-		refreshAt(0,35,0);
-		refreshAt(0,40,0);
-		refreshAt(0,45,0);
-		refreshAt(0,50,0);
-		refreshAt(0,55,0);
-
-		refreshAt(1,0,0);
-		refreshAt(1,5,0);
-		refreshAt(1,10,0);
-		refreshAt(1,15,0);
-		refreshAt(1,20,0);
-		refreshAt(1,25,0);
-		refreshAt(1,30,0);
-		refreshAt(1,35,0);
-		refreshAt(1,40,0);
-		refreshAt(1,45,0);
-		refreshAt(1,50,0);
-		refreshAt(1,55,0);
-
-		refreshAt(2,0,0);
-		refreshAt(2,5,0);
-		refreshAt(2,10,0);
-		refreshAt(2,15,0);
-		refreshAt(2,20,0);
-		refreshAt(2,25,0);
-		refreshAt(2,30,0);
-		refreshAt(2,35,0);
-		refreshAt(2,40,0);
-		refreshAt(2,45,0);
-		refreshAt(2,50,0);
-		refreshAt(2,55,0);
-
-		refreshAt(3,0,0);
-		refreshAt(3,5,0);
-		refreshAt(3,10,0);
-		refreshAt(3,15,0);
-		refreshAt(3,20,0);
-		refreshAt(3,25,0);
-		refreshAt(3,30,0);
-		refreshAt(3,35,0);
-		refreshAt(3,40,0);
-		refreshAt(3,45,0);
-		refreshAt(3,50,0);
-		refreshAt(3,55,0);
-
-		refreshAt(4,0,0);
-		refreshAt(4,5,0);
-		refreshAt(4,10,0);
-		refreshAt(4,15,0);
-		refreshAt(4,20,0);
-		refreshAt(4,25,0);
-		refreshAt(4,30,0);
-		refreshAt(4,35,0);
-		refreshAt(4,40,0);
-		refreshAt(4,45,0);
-		refreshAt(4,50,0);
-		refreshAt(4,55,0);
-
-		refreshAt(5,0,0);
-		refreshAt(5,5,0);
-		refreshAt(5,10,0);
-		refreshAt(5,15,0);
-		refreshAt(5,20,0);
-		refreshAt(5,25,0);
-		refreshAt(5,30,0);
-		refreshAt(5,35,0);
-		refreshAt(5,40,0);
-		refreshAt(5,45,0);
-		refreshAt(5,50,0);
-		refreshAt(5,55,0);
-
-		refreshAt(6,0,0);
-		refreshAt(6,5,0);
-		refreshAt(6,10,0);
-		refreshAt(6,15,0);
-		refreshAt(6,20,0);
-		refreshAt(6,25,0);
-		refreshAt(6,30,0);
-		refreshAt(6,35,0);
-		refreshAt(6,40,0);
-		refreshAt(6,45,0);
-		refreshAt(6,50,0);
-		refreshAt(6,55,0);
-
-		refreshAt(7,0,0);
-		refreshAt(7,5,0);
-		refreshAt(7,10,0);
-		refreshAt(7,15,0);
-		refreshAt(7,20,0);
-		refreshAt(7,25,0);
-		refreshAt(7,30,0);
-		refreshAt(7,35,0);
-		refreshAt(7,40,0);
-		refreshAt(7,45,0);
-		refreshAt(7,50,0);
-		refreshAt(7,55,0);
-
-		refreshAt(8,0,0);
-		refreshAt(8,5,0);
-		refreshAt(8,10,0);
-		refreshAt(8,15,0);
-		refreshAt(8,20,0);
-		refreshAt(8,25,0);
-		refreshAt(8,30,0);
-		refreshAt(8,35,0);
-		refreshAt(8,40,0);
-		refreshAt(8,45,0);
-		refreshAt(8,50,0);
-		refreshAt(8,55,0);
-
-		refreshAt(9,0,0);
-		refreshAt(9,5,0);
-		refreshAt(9,10,0);
-		refreshAt(9,15,0);
-		refreshAt(9,20,0);
-		refreshAt(9,25,0);
-		refreshAt(9,30,0);
-		refreshAt(9,35,0);
-		refreshAt(9,40,0);
-		refreshAt(9,45,0);
-		refreshAt(9,50,0);
-		refreshAt(9,55,0);
-
-		refreshAt(10,0,0);
-		refreshAt(10,5,0);
-		refreshAt(10,10,0);
-		refreshAt(10,15,0);
-		refreshAt(10,20,0);
-		refreshAt(10,25,0);
-		refreshAt(10,30,0);
-		refreshAt(10,35,0);
-		refreshAt(10,40,0);
-		refreshAt(10,45,0);
-		refreshAt(10,50,0);
-		refreshAt(10,55,0);
-
-		refreshAt(11,0,0);
-		refreshAt(11,5,0);
-		refreshAt(11,10,0);
-		refreshAt(11,15,0);
-		refreshAt(11,20,0);
-		refreshAt(11,25,0);
-		refreshAt(11,30,0);
-		refreshAt(11,35,0);
-		refreshAt(11,40,0);
-		refreshAt(11,45,0);
-		refreshAt(11,50,0);
-		refreshAt(11,55,0);
-
-		refreshAt(12,0,0);
-		refreshAt(12,5,0);
-		refreshAt(12,10,0);
-		refreshAt(12,15,0);
-		refreshAt(12,20,0);
-		refreshAt(12,25,0);
-		refreshAt(12,30,0);
-		refreshAt(12,35,0);
-		refreshAt(12,40,0);
-		refreshAt(12,45,0);
-		refreshAt(12,50,0);
-		refreshAt(12,55,0);
-
-		refreshAt(13,0,0);
-		refreshAt(13,5,0);
-		refreshAt(13,10,0);
-		refreshAt(13,15,0);
-		refreshAt(13,20,0);
-		refreshAt(13,25,0);
-		refreshAt(13,30,0);
-		refreshAt(13,35,0);
-		refreshAt(13,40,0);
-		refreshAt(13,45,0);
-		refreshAt(13,50,0);
-		refreshAt(13,55,0);
-
-		refreshAt(14,0,0);
-		refreshAt(14,5,0);
-		refreshAt(14,10,0);
-		refreshAt(14,15,0);
-		refreshAt(14,20,0);
-		refreshAt(14,25,0);
-		refreshAt(14,30,0);
-		refreshAt(14,35,0);
-		refreshAt(14,40,0);
-		refreshAt(14,45,0);
-		refreshAt(14,50,0);
-		refreshAt(14,55,0);
-
-		refreshAt(15,0,0);
-		refreshAt(15,5,0);
-		refreshAt(15,10,0);
-		refreshAt(15,15,0);
-		refreshAt(15,20,0);
-		refreshAt(15,25,0);
-		refreshAt(15,30,0);
-		refreshAt(15,35,0);
-		refreshAt(15,40,0);
-		refreshAt(15,45,0);
-		refreshAt(15,50,0);
-		refreshAt(15,55,0);
-
-		refreshAt(16,0,0);
-		refreshAt(16,5,0);
-		refreshAt(16,10,0);
-		refreshAt(16,15,0);
-		refreshAt(16,20,0);
-		refreshAt(16,25,0);
-		refreshAt(16,30,0);
-		refreshAt(16,35,0);
-		refreshAt(16,40,0);
-		refreshAt(16,45,0);
-		refreshAt(16,50,0);
-		refreshAt(16,55,0);
-
-		refreshAt(17,0,0);
-		refreshAt(17,5,0);
-		refreshAt(17,10,0);
-		refreshAt(17,15,0);
-		refreshAt(17,20,0);
-		refreshAt(17,25,0);
-		refreshAt(17,30,0);
-		refreshAt(17,35,0);
-		refreshAt(17,40,0);
-		refreshAt(17,45,0);
-		refreshAt(17,50,0);
-		refreshAt(17,55,0);
-
-		refreshAt(18,0,0);
-		refreshAt(18,5,0);
-		refreshAt(18,10,0);
-		refreshAt(18,15,0);
-		refreshAt(18,20,0);
-		refreshAt(18,25,0);
-		refreshAt(18,30,0);
-		refreshAt(18,35,0);
-		refreshAt(18,40,0);
-		refreshAt(18,45,0);
-		refreshAt(18,50,0);
-		refreshAt(18,55,0);
-
-		refreshAt(19,0,0);
-		refreshAt(19,5,0);
-		refreshAt(19,10,0);
-		refreshAt(19,15,0);
-		refreshAt(19,20,0);
-		refreshAt(19,25,0);
-		refreshAt(19,30,0);
-		refreshAt(19,35,0);
-		refreshAt(19,40,0);
-		refreshAt(19,45,0);
-		refreshAt(19,50,0);
-		refreshAt(19,55,0);
-
-		refreshAt(20,0,0);
-		refreshAt(20,5,0);
-		refreshAt(20,10,0);
-		refreshAt(20,15,0);
-		refreshAt(20,20,0);
-		refreshAt(20,25,0);
-		refreshAt(20,30,0);
-		refreshAt(20,35,0);
-		refreshAt(20,40,0);
-		refreshAt(20,45,0);
-		refreshAt(20,50,0);
-		refreshAt(20,55,0);
-
-		refreshAt(21,0,0);
-		refreshAt(21,5,0);
-		refreshAt(21,10,0);
-		refreshAt(21,15,0);
-		refreshAt(21,20,0);
-		refreshAt(21,25,0);
-		refreshAt(21,30,0);
-		refreshAt(21,35,0);
-		refreshAt(21,40,0);
-		refreshAt(21,45,0);
-		refreshAt(21,50,0);
-		refreshAt(21,55,0);
-
-		refreshAt(22,0,0);
-		refreshAt(22,5,0);
-		refreshAt(22,10,0);
-		refreshAt(22,15,0);
-		refreshAt(22,20,0);
-		refreshAt(22,25,0);
-		refreshAt(22,30,0);
-		refreshAt(22,35,0);
-		refreshAt(22,40,0);
-		refreshAt(22,45,0);
-		refreshAt(22,50,0);
-		refreshAt(22,55,0);
-
-		refreshAt(23,0,0);
-		refreshAt(23,5,0);
-		refreshAt(23,10,0);
-		refreshAt(23,15,0);
-		refreshAt(23,20,0);
-		refreshAt(23,25,0);
-		refreshAt(23,30,0);
-		refreshAt(23,35,0);
-		refreshAt(23,40,0);
-		refreshAt(23,45,0);
-		refreshAt(23,50,0);
-		refreshAt(23,55,0);
-</script>
+		
+			if (navigator.geolocation) {
+			    navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+			}
+			//Check if latitude and longitude has already been authorized
+			function successFunction(position) {
+			    var lat = position.coords.latitude;
+			    var long = position.coords.longitude;
+		
+			    localStorage['authorizedGeoLocation'] = 1;
+			}
+		
+			function errorFunction(){
+			    localStorage['authorizedGeoLocation'] = 0;
+			}
+		
+			function checkauthorizedGeoLocation(){ // check if geolocation was previously allowed
+			    if(typeof localStorage['authorizedGeoLocation'] == "undefined" || localStorage['authorizedGeoLocation'] == "0" )
+			        return false;
+			    else
+			        return true;
+			}
+		
+			if (checkauthorizedGeoLocation("true")) {
+			/* If geolocation was already allowed */
+				currentweather.innerHTML = "Checking weather..."
+			}
+		
+			/* Emulate click so the script asks for location access when the page loads without user interaction */
+			$location.trigger('touchstart'); //use touchstart so it works on older IOS safari
+		
+			/* Load the weather from Austin
+			$(function () {
+				//@params location, woeid
+				//loadWeather('Austin','');
+				//setInterval(loadWeather, 60000); //Update the weather every minute
+			});*/
+		
+			/* load weather from simpleWeather & Yahoo API (API calls are handled in the background by simpleWeather */
+			function loadWeather(location, woeid) {
+		
+			  $.simpleWeather({
+			    location: location,
+			    woeid: woeid,
+			    unit: 'f',
+			    success: function(weather) {
+			      html = '<h1>'+weather.temp+'<span class="smaller">&deg;'+weather.units.temp+'</span></h1>';
+			      html += '<ul><li>'+weather.currently+'</li>';
+			      html += '<li>'+weather.city+', '+weather.region+'</li>';
+			      html += '<li>'+weather.alt.temp+'<span class="small">&deg;C</span></li></ul>';
+		
+			    $("#weather").html(html);
+		
+				/* set shortcut variable to detect weather codes - weather code reference : https://developer.yahoo.com/weather/documentation.html?guccounter=1#codes */
+				var w = weather.code;
+				
+				/* Log weather code - delete the // from the line below to show weather code logs in the console */
+				//console.log(w);
+		
+				/* Shortcut function to load images from Unsplash API */
+				function setBG(s) {body.style.backgroundImage = "url(" + "https://source.unsplash.com/random?" + s + ")";};
+		
+				/* Set weather code response backgrounds */ 
+				if (w == '0' || w == '1' || w == '2') {
+				  /* If it's a crazy storm, use storm backgrounds and show a warning */
+				  setBG("storm");
+				  currentweather.innerHTML = "There's a crazy storm nearby, why are you on the internet? Go hide in the bathtub!";
+				  //currentweather.style.display = "none";
+				  root.className += " night-cursor";
+				} else if (w == '3' || w == '4' || w == '45' || w == '37' || w == '38' || w == '39' || w == '40' || w == '47') {
+				  /* If there's a storm, use storm backgrounds */
+				  setBG("storm");
+				  currentweather.style.display = "none";
+				  root.className += " sunset-cursor";
+				} else if (w == '5' || w == '6' || w == '8' || w == '9' || w == '10' || w == '11' || w == '12') {
+				  /* If it's raining, use rain backgrounds */
+				  setBG("rain");
+				  currentweather.style.display = "none";
+				  root.className += " sunset-cursor";
+				} else if (w == '7' || w == '13' || w == '14' || w == '15' || w == '16' || w == '41' || w == '42' || w == '43' || w == '46') {
+				  /* If it's snowing, use snow backgrounds */
+				  setBG("snow");
+				  currentweather.style.display = "none";
+				  root.className += " night-cursor";
+				} else if (w == '26' || w == '27' || w == '28' || w == '29' || w == '30' || w == '44') {
+				  /* If it's cloudy, use cloudy backgrounds */
+				  setBG("cloudy");
+				  currentweather.style.display = "none";
+				  root.className += " sunset-cursor";
+				} else if (w == '17' || w == '18' || w == '25' || w =='35') {
+				  /* If there's hail or sleet or cold, use ice backgrounds */
+				  setBG("ice");
+				  currentweather.style.display = "none";
+				  root.className += " night-cursor";
+				} else if (w == '19') {
+				  /* If it's dusty, use dust backgrounds */
+				  setBG("dust");
+				  currentweather.style.display = "none";
+				  root.className += " day-cursor";
+				} else if (w == '36') {
+				  /* If it's hot, use desert backgrounds */
+				  setBG("desert");
+				  currentweather.style.display = "none";
+				  root.className += " day-cursor";
+				} else if (w == '20' || w == '21') {
+				  /* If it's foggy/hazy, use fog backgrounds */
+				  setBG("fog");
+				  currentweather.style.display = "none";
+				  root.className += " night-cursor";
+				} else if (w == '22') {
+				  /* If it's smoky, use smoke backgrounds */
+				  setBG("smoke");
+				  currentweather.style.display = "none";
+				  root.className += " night-cursor";
+				} else if (w == '23' || w == '24') {
+				  /* If it's blustery/windy, use wind backgrounds */
+				  setBG("wind");
+				  currentweather.style.display = "none";
+				  root.className += " night-cursor";
+				} else if (w == '31' || w == '32' || w == '33' || w == '34') {
+				  /* If it's clear/sunny, use sunny backgrounds */
+				  setBG("sunny");
+				  currentweather.style.display = "none";
+				  root.className += " day-cursor";
+				} else {
+				  /* If it's none of those, the weather service is down, so use random weather backgrounds */
+				  setBG("weather");
+				  currentweather.innerHTML = "The weather service is not currently available.. but here's a beautiful background image anyways!";
+				  root.className += " day-cursor";
+				}
+		
+				/* Get elements background URL */
+				function getBgUrl(el) {
+				    if (el.currentStyle) { /* IE */
+				        bg = el.currentStyle.backgroundImage;
+				    } else if (document.defaultView && document.defaultView.getComputedStyle) { /* Firefox */
+				        bg = document.defaultView.getComputedStyle(el, "").backgroundImage;
+				    } else { /* try and get inline style */
+				        bg = el.style.backgroundImage;
+				    }
+				    return bg.replace(/url\(['"]?(.*?)['"]?\)/i, "$1");
+					};
+		
+					/* Set image src to background URL from body */
+					img.src = getBgUrl(body);
+		
+					/* Error/Success handler */
+					img.onerror = function() {
+						loading.innerHTML = "Uh oh... the image database is down. Please try again later."
+					};
+					img.onload = function() {
+						loading.style.display = "none";
+						root.classList.remove("black");
+					};
+			    },
+			    error: function(error) {
+			      $("#weather").html('<p>'+error+'</p>');
+			    }
+			  });
+			}
+		
+			/* Refresh at a specific time */
+			function refreshAt(hours, minutes, seconds) {
+			    var now = new Date();
+			    var then = new Date();
+		
+			    if(now.getHours() > hours ||
+			       (now.getHours() == hours && now.getMinutes() > minutes) ||
+			        now.getHours() == hours && now.getMinutes() == minutes && now.getSeconds() >= seconds) {
+			        then.setDate(now.getDate() + 1);
+			    }
+			    then.setHours(hours);
+			    then.setMinutes(minutes);
+			    then.setSeconds(seconds);
+		
+			    var timeout = (then.getTime() - now.getTime());
+			    setTimeout(function() {
+				    window.location.reload(true); }, timeout);
+				};
+		
+				/* Refresh times in UTC - 5 minutes intervals. Yes.. I know. */
+				refreshAt(0,0,0);
+				refreshAt(0,5,0);
+				refreshAt(0,10,0);
+				refreshAt(0,15,0);
+				refreshAt(0,20,0);
+				refreshAt(0,25,0);
+				refreshAt(0,30,0);
+				refreshAt(0,35,0);
+				refreshAt(0,40,0);
+				refreshAt(0,45,0);
+				refreshAt(0,50,0);
+				refreshAt(0,55,0);
+		
+				refreshAt(1,0,0);
+				refreshAt(1,5,0);
+				refreshAt(1,10,0);
+				refreshAt(1,15,0);
+				refreshAt(1,20,0);
+				refreshAt(1,25,0);
+				refreshAt(1,30,0);
+				refreshAt(1,35,0);
+				refreshAt(1,40,0);
+				refreshAt(1,45,0);
+				refreshAt(1,50,0);
+				refreshAt(1,55,0);
+		
+				refreshAt(2,0,0);
+				refreshAt(2,5,0);
+				refreshAt(2,10,0);
+				refreshAt(2,15,0);
+				refreshAt(2,20,0);
+				refreshAt(2,25,0);
+				refreshAt(2,30,0);
+				refreshAt(2,35,0);
+				refreshAt(2,40,0);
+				refreshAt(2,45,0);
+				refreshAt(2,50,0);
+				refreshAt(2,55,0);
+		
+				refreshAt(3,0,0);
+				refreshAt(3,5,0);
+				refreshAt(3,10,0);
+				refreshAt(3,15,0);
+				refreshAt(3,20,0);
+				refreshAt(3,25,0);
+				refreshAt(3,30,0);
+				refreshAt(3,35,0);
+				refreshAt(3,40,0);
+				refreshAt(3,45,0);
+				refreshAt(3,50,0);
+				refreshAt(3,55,0);
+		
+				refreshAt(4,0,0);
+				refreshAt(4,5,0);
+				refreshAt(4,10,0);
+				refreshAt(4,15,0);
+				refreshAt(4,20,0);
+				refreshAt(4,25,0);
+				refreshAt(4,30,0);
+				refreshAt(4,35,0);
+				refreshAt(4,40,0);
+				refreshAt(4,45,0);
+				refreshAt(4,50,0);
+				refreshAt(4,55,0);
+		
+				refreshAt(5,0,0);
+				refreshAt(5,5,0);
+				refreshAt(5,10,0);
+				refreshAt(5,15,0);
+				refreshAt(5,20,0);
+				refreshAt(5,25,0);
+				refreshAt(5,30,0);
+				refreshAt(5,35,0);
+				refreshAt(5,40,0);
+				refreshAt(5,45,0);
+				refreshAt(5,50,0);
+				refreshAt(5,55,0);
+		
+				refreshAt(6,0,0);
+				refreshAt(6,5,0);
+				refreshAt(6,10,0);
+				refreshAt(6,15,0);
+				refreshAt(6,20,0);
+				refreshAt(6,25,0);
+				refreshAt(6,30,0);
+				refreshAt(6,35,0);
+				refreshAt(6,40,0);
+				refreshAt(6,45,0);
+				refreshAt(6,50,0);
+				refreshAt(6,55,0);
+		
+				refreshAt(7,0,0);
+				refreshAt(7,5,0);
+				refreshAt(7,10,0);
+				refreshAt(7,15,0);
+				refreshAt(7,20,0);
+				refreshAt(7,25,0);
+				refreshAt(7,30,0);
+				refreshAt(7,35,0);
+				refreshAt(7,40,0);
+				refreshAt(7,45,0);
+				refreshAt(7,50,0);
+				refreshAt(7,55,0);
+		
+				refreshAt(8,0,0);
+				refreshAt(8,5,0);
+				refreshAt(8,10,0);
+				refreshAt(8,15,0);
+				refreshAt(8,20,0);
+				refreshAt(8,25,0);
+				refreshAt(8,30,0);
+				refreshAt(8,35,0);
+				refreshAt(8,40,0);
+				refreshAt(8,45,0);
+				refreshAt(8,50,0);
+				refreshAt(8,55,0);
+		
+				refreshAt(9,0,0);
+				refreshAt(9,5,0);
+				refreshAt(9,10,0);
+				refreshAt(9,15,0);
+				refreshAt(9,20,0);
+				refreshAt(9,25,0);
+				refreshAt(9,30,0);
+				refreshAt(9,35,0);
+				refreshAt(9,40,0);
+				refreshAt(9,45,0);
+				refreshAt(9,50,0);
+				refreshAt(9,55,0);
+		
+				refreshAt(10,0,0);
+				refreshAt(10,5,0);
+				refreshAt(10,10,0);
+				refreshAt(10,15,0);
+				refreshAt(10,20,0);
+				refreshAt(10,25,0);
+				refreshAt(10,30,0);
+				refreshAt(10,35,0);
+				refreshAt(10,40,0);
+				refreshAt(10,45,0);
+				refreshAt(10,50,0);
+				refreshAt(10,55,0);
+		
+				refreshAt(11,0,0);
+				refreshAt(11,5,0);
+				refreshAt(11,10,0);
+				refreshAt(11,15,0);
+				refreshAt(11,20,0);
+				refreshAt(11,25,0);
+				refreshAt(11,30,0);
+				refreshAt(11,35,0);
+				refreshAt(11,40,0);
+				refreshAt(11,45,0);
+				refreshAt(11,50,0);
+				refreshAt(11,55,0);
+		
+				refreshAt(12,0,0);
+				refreshAt(12,5,0);
+				refreshAt(12,10,0);
+				refreshAt(12,15,0);
+				refreshAt(12,20,0);
+				refreshAt(12,25,0);
+				refreshAt(12,30,0);
+				refreshAt(12,35,0);
+				refreshAt(12,40,0);
+				refreshAt(12,45,0);
+				refreshAt(12,50,0);
+				refreshAt(12,55,0);
+		
+				refreshAt(13,0,0);
+				refreshAt(13,5,0);
+				refreshAt(13,10,0);
+				refreshAt(13,15,0);
+				refreshAt(13,20,0);
+				refreshAt(13,25,0);
+				refreshAt(13,30,0);
+				refreshAt(13,35,0);
+				refreshAt(13,40,0);
+				refreshAt(13,45,0);
+				refreshAt(13,50,0);
+				refreshAt(13,55,0);
+		
+				refreshAt(14,0,0);
+				refreshAt(14,5,0);
+				refreshAt(14,10,0);
+				refreshAt(14,15,0);
+				refreshAt(14,20,0);
+				refreshAt(14,25,0);
+				refreshAt(14,30,0);
+				refreshAt(14,35,0);
+				refreshAt(14,40,0);
+				refreshAt(14,45,0);
+				refreshAt(14,50,0);
+				refreshAt(14,55,0);
+		
+				refreshAt(15,0,0);
+				refreshAt(15,5,0);
+				refreshAt(15,10,0);
+				refreshAt(15,15,0);
+				refreshAt(15,20,0);
+				refreshAt(15,25,0);
+				refreshAt(15,30,0);
+				refreshAt(15,35,0);
+				refreshAt(15,40,0);
+				refreshAt(15,45,0);
+				refreshAt(15,50,0);
+				refreshAt(15,55,0);
+		
+				refreshAt(16,0,0);
+				refreshAt(16,5,0);
+				refreshAt(16,10,0);
+				refreshAt(16,15,0);
+				refreshAt(16,20,0);
+				refreshAt(16,25,0);
+				refreshAt(16,30,0);
+				refreshAt(16,35,0);
+				refreshAt(16,40,0);
+				refreshAt(16,45,0);
+				refreshAt(16,50,0);
+				refreshAt(16,55,0);
+		
+				refreshAt(17,0,0);
+				refreshAt(17,5,0);
+				refreshAt(17,10,0);
+				refreshAt(17,15,0);
+				refreshAt(17,20,0);
+				refreshAt(17,25,0);
+				refreshAt(17,30,0);
+				refreshAt(17,35,0);
+				refreshAt(17,40,0);
+				refreshAt(17,45,0);
+				refreshAt(17,50,0);
+				refreshAt(17,55,0);
+		
+				refreshAt(18,0,0);
+				refreshAt(18,5,0);
+				refreshAt(18,10,0);
+				refreshAt(18,15,0);
+				refreshAt(18,20,0);
+				refreshAt(18,25,0);
+				refreshAt(18,30,0);
+				refreshAt(18,35,0);
+				refreshAt(18,40,0);
+				refreshAt(18,45,0);
+				refreshAt(18,50,0);
+				refreshAt(18,55,0);
+		
+				refreshAt(19,0,0);
+				refreshAt(19,5,0);
+				refreshAt(19,10,0);
+				refreshAt(19,15,0);
+				refreshAt(19,20,0);
+				refreshAt(19,25,0);
+				refreshAt(19,30,0);
+				refreshAt(19,35,0);
+				refreshAt(19,40,0);
+				refreshAt(19,45,0);
+				refreshAt(19,50,0);
+				refreshAt(19,55,0);
+		
+				refreshAt(20,0,0);
+				refreshAt(20,5,0);
+				refreshAt(20,10,0);
+				refreshAt(20,15,0);
+				refreshAt(20,20,0);
+				refreshAt(20,25,0);
+				refreshAt(20,30,0);
+				refreshAt(20,35,0);
+				refreshAt(20,40,0);
+				refreshAt(20,45,0);
+				refreshAt(20,50,0);
+				refreshAt(20,55,0);
+		
+				refreshAt(21,0,0);
+				refreshAt(21,5,0);
+				refreshAt(21,10,0);
+				refreshAt(21,15,0);
+				refreshAt(21,20,0);
+				refreshAt(21,25,0);
+				refreshAt(21,30,0);
+				refreshAt(21,35,0);
+				refreshAt(21,40,0);
+				refreshAt(21,45,0);
+				refreshAt(21,50,0);
+				refreshAt(21,55,0);
+		
+				refreshAt(22,0,0);
+				refreshAt(22,5,0);
+				refreshAt(22,10,0);
+				refreshAt(22,15,0);
+				refreshAt(22,20,0);
+				refreshAt(22,25,0);
+				refreshAt(22,30,0);
+				refreshAt(22,35,0);
+				refreshAt(22,40,0);
+				refreshAt(22,45,0);
+				refreshAt(22,50,0);
+				refreshAt(22,55,0);
+		
+				refreshAt(23,0,0);
+				refreshAt(23,5,0);
+				refreshAt(23,10,0);
+				refreshAt(23,15,0);
+				refreshAt(23,20,0);
+				refreshAt(23,25,0);
+				refreshAt(23,30,0);
+				refreshAt(23,35,0);
+				refreshAt(23,40,0);
+				refreshAt(23,45,0);
+				refreshAt(23,50,0);
+				refreshAt(23,55,0);
+	</script>
 </body>
 </html>
